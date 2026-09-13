@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K.S. Chandra — GIS Custom Mapping &amp; Spatial Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDE6D3;
+    --paper-dark:#E1D6B9;
+    --cream-card:#FAF6EC;
+    --ink:#1F2E29;
+    --teal:#16443F;
+    --teal-deep:#0F332F;
+    --river:#3E7CB1;
+    --soil:#8B5A3C;
+    --moss:#5F7F45;
+    --gold:#C99A3B;
+    --line: rgba(31,46,41,0.14);
+    --maxw: 1120px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    font-size:17px;
+    line-height:1.6;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(31,46,41,0.07) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    color:var(--teal-deep);
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  a{color:inherit;}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
+
+  /* ---------- NAV ---------- */
+  header.site{
+    position:sticky; top:0; z-index:50;
+    background:rgba(237,230,211,0.92);
+    backdrop-filter: blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  nav.wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    padding-top:16px; padding-bottom:16px;
+  }
+  .brand{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:20px;
+    color:var(--teal-deep);
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand svg{flex-shrink:0;}
+  .navlinks{display:flex; gap:28px; font-size:15px; font-weight:500;}
+  .navlinks a{text-decoration:none; color:var(--ink); opacity:0.75; transition:opacity .15s;}
+  .navlinks a:hover{opacity:1;}
+  .navcall{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--teal); color:#fff;
+    padding:9px 16px; border-radius:3px;
+    font-size:14px; font-weight:600; text-decoration:none;
+    white-space:nowrap;
+  }
+  .menu-toggle{display:none; background:none; border:none; cursor:pointer;}
+
+  /* ---------- HERO ---------- */
+  .hero{padding:72px 0 96px;}
+  .hero .wrap{display:grid; grid-template-columns: 1.05fr 0.85fr; gap:56px; align-items:center;}
+  .eyebrow-line{
+    display:flex; align-items:center; gap:12px;
+    color:var(--moss); font-weight:600; font-size:14px; margin-bottom:18px;
+  }
+  .eyebrow-line .rule{flex:0 0 34px; height:1px; background:var(--moss);}
+  .hero h1{
+    font-size:50px; line-height:1.08; font-weight:600;
+    max-width:11.5ch;
+  }
+  .hero h1 em{font-style:italic; color:var(--soil);}
+  .hero p.lede{
+    margin-top:22px; font-size:18px; max-width:46ch; color:#3A4A44;
+  }
+  .hero .ctas{display:flex; gap:14px; margin-top:34px; flex-wrap:wrap;}
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:13px 22px; border-radius:3px;
+    font-weight:600; font-size:15px; text-decoration:none;
+    border:1px solid transparent;
+  }
+  .btn-primary{background:var(--teal); color:#fff;}
+  .btn-primary:hover{background:var(--teal-deep);}
+  .btn-outline{border-color:var(--ink); color:var(--ink);}
+  .btn-outline:hover{background:var(--ink); color:var(--paper);}
+
+  /* core sample graphic */
+  .core{
+    position:relative;
+    background:var(--cream-card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:26px 26px 22px;
+  }
+  .core-title{
+    font-size:12px; letter-spacing:0.02em; color:#6b6b58;
+    display:flex; justify-content:space-between; margin-bottom:14px;
+    font-family:'Work Sans', sans-serif; font-weight:600;
+  }
+  .core-cylinder{
+    display:flex; flex-direction:column;
+    border:2px solid var(--ink);
+    border-radius:10px; overflow:hidden;
+  }
+  .band{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:13px 16px; font-size:14.5px; font-weight:600; color:#fff;
+    position:relative;
+  }
+  .band span.label{position:relative; z-index:2;}
+  .band small{
+    font-weight:500; font-size:12px; opacity:0.85; z-index:2;
+  }
+  .b1{background:repeating-linear-gradient(100deg, #EFE7D0, #EFE7D0 10px, #E4D8B4 10px, #E4D8B4 20px); color:var(--ink);}
+  .b2{background:linear-gradient(120deg, #3E7CB1, #5C97C9);}
+  .b3{background:repeating-linear-gradient(115deg, #8B5A3C, #8B5A3C 8px, #9F6C4A 8px, #9F6C4A 16px);}
+  .b4{background:#2C2A24; }
+  .b4::after{
+    content:""; position:absolute; inset:0;
+    background-image: radial-gradient(circle, var(--gold) 2px, transparent 2.4px);
+    background-size: 16px 16px; background-position: 4px 4px;
+    opacity:0.9;
+  }
+  .b5{background:linear-gradient(120deg, #5C3B24, #6E4830);}
+  .b6{background:linear-gradient(120deg, #5F7F45, #4C6A38);}
+  .core-caption{
+    margin-top:14px; font-size:13px; color:#5c5c4d; text-align:center;
+  }
+
+  /* ---------- SECTION LABEL ---------- */
+  .section{padding:76px 0;}
+  .section-head{max-width:640px; margin-bottom:44px;}
+  .section-head .kicker{
+    color:var(--soil); font-weight:600; font-size:14px; margin-bottom:10px;
+  }
+  .section-head h2{font-size:34px; font-weight:600;}
+  .section-head p{margin-top:14px; color:#3A4A44; font-size:16.5px;}
+
+  /* ---------- AUDIENCE ---------- */
+  .audience{background:var(--paper-dark); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .aud-row{
+    display:flex; flex-wrap:wrap;
+    border-top:1px solid var(--line);
+  }
+  .aud-item{
+    flex:1 1 220px;
+    padding:26px 4px;
+    border-right:1px solid var(--line);
+    display:flex; align-items:center; gap:14px;
+  }
+  .aud-item:last-child{border-right:none;}
+  .aud-item svg{flex-shrink:0; color:var(--teal);}
+  .aud-item strong{
+    font-family:'Fraunces', serif; font-size:19px; font-weight:600; display:block;
+  }
+  .aud-item span{font-size:14px; color:#5c5c4d;}
+
+  /* ---------- SERVICES (layers) ---------- */
+  .layers{display:flex; flex-direction:column;}
+  .layer{
+    display:grid; grid-template-columns: 60px 1fr 1.3fr;
+    gap:26px; align-items:start;
+    padding:26px 0; border-top:1px solid var(--line);
+  }
+  .layer:last-child{border-bottom:1px solid var(--line);}
+  .layer-num{
+    font-family:'Fraunces', serif; font-size:15px; font-weight:600; color:var(--soil);
+    padding-top:4px;
+  }
+  .layer-swatch{
+    width:44px; height:44px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; flex-shrink:0;
+  }
+  .layer h3{font-size:21px; font-weight:600; margin-bottom:6px;}
+  .layer-name{display:flex; align-items:center; gap:16px;}
+  .layer p{margin:0; color:#3A4A44; font-size:15.5px;}
+
+  .sw-study{background:var(--river);}
+  .sw-river{background:var(--river);}
+  .sw-geo{background:var(--soil);}
+  .sw-min{background:#2C2A24;}
+  .sw-soil{background:#5C3B24;}
+  .sw-geomorph{background:var(--moss);}
+
+  /* ---------- ABOUT / STRIP ---------- */
+  .strip{
+    background:var(--teal); color:#EFE9DA;
+    padding:64px 0;
+  }
+  .strip .wrap{display:grid; grid-template-columns: 1fr 1fr; gap:50px; align-items:center;}
+  .strip h2{color:#fff; font-size:30px; font-weight:600; max-width:14ch;}
+  .strip p{color:#CFE0DB; font-size:16px; margin-top:16px;}
+  .strip-stats{display:flex; gap:34px; margin-top:26px; flex-wrap:wrap;}
+  .stat b{font-family:'Fraunces', serif; font-size:28px; display:block; color:var(--gold);}
+  .stat span{font-size:13px; color:#B9CFC8;}
+
+  /* ---------- CONTACT ---------- */
+  .contact .wrap{display:grid; grid-template-columns: 1fr 1fr; gap:44px;}
+  .legend-card{
+    background:var(--cream-card); border:1px solid var(--line); border-radius:4px;
+    padding:34px;
+  }
+  .legend-card h3{font-size:22px; margin-bottom:18px;}
+  .contact-row{
+    display:flex; align-items:center; gap:14px;
+    padding:14px 0; border-top:1px solid var(--line);
+    text-decoration:none; color:var(--ink);
+  }
+  .contact-row:first-of-type{border-top:none;}
+  .contact-row svg{color:var(--teal); flex-shrink:0;}
+  .contact-row strong{display:block; font-size:16px;}
+  .contact-row span{font-size:13px; color:#6b6b58;}
+  .map-note{
+    background:var(--paper-dark); border:1px dashed #b7ac8c;
+    border-radius:4px; padding:30px; font-size:15px; color:#3A4A44;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .map-note strong{font-family:'Fraunces', serif; font-size:19px; display:block; margin-bottom:10px; color:var(--teal-deep);}
+
+  footer{
+    padding:30px 0; text-align:center; font-size:13px; color:#6b6b58;
+    border-top:1px solid var(--line);
+  }
+
+  @media (max-width:860px){
+    .hero .wrap{grid-template-columns:1fr;}
+    .hero{padding-top:44px;}
+    .hero h1{font-size:38px;}
+    .navlinks{display:none;}
+    .strip .wrap{grid-template-columns:1fr;}
+    .contact .wrap{grid-template-columns:1fr;}
+    .layer{grid-template-columns: 44px 1fr; }
+    .layer-name{grid-column:1 / -1;}
+    .aud-row{flex-direction:column;}
+    .aud-item{border-right:none; border-bottom:1px solid var(--line);}
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <nav class="wrap">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M3 17l5-8 4 5 3-4 6 7" stroke="#16443F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="#16443F" stroke-width="1.4"/></svg>
+      K.S. Chandra
+    </div>
+    <div class="navlinks">
+      <a href="#services">Mapping Layers</a>
+      <a href="#audience">Who It's For</a>
+      <a href="#about">Approach</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <a class="navcall" href="tel:+919423685683">Call +91 94236 85683</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow-line"><span class="rule"></span>GIS CUSTOM MAPPING &amp; SPATIAL ANALYSIS</div>
+      <h1>Every landscape has <em>layers</em>. We help you read them.</h1>
+      <p class="lede">Custom GIS mapping and spatial analysis for professors, historians, researchers and students — built layer by layer around your study area, from rivers and rock to soil and slope.</p>
+    </div>
+
+    <div class="core">
+      <div class="core-title"><span>CORE SAMPLE</span><span>YOUR STUDY AREA</span></div>
+      <div class="core-cylinder">
+        <div class="band b1"><span class="label">Study Area</span><small>boundary &amp; base</small></div>
+        <div class="band b2"><span class="label">Rivers &amp; Drainage</span><small>hydrology</small></div>
+        <div class="band b3"><span class="label">Geology</span><small>rock &amp; structure</small></div>
+        <div class="band b4"><span class="label">Minerals</span><small>occurrence</small></div>
+        <div class="band b5"><span class="label">Soils</span><small>classification</small></div>
+        <div class="band b6"><span class="label">Geomorphology</span><small>landforms</small></div>
+      </div>
+      <p class="core-caption">Every map is built as a stack — request one layer or all six.</p>
+    </div>
+  </div>
+</section>
+
+<section class="audience" id="audience">
+  <div class="wrap" style="padding-top:44px; padding-bottom:12px;">
+    <div class="section-head" style="margin-bottom:0;">
+      <div class="kicker">WHO THIS IS FOR</div>
+      <h2>Built for people who read landscapes for a living</h2>
+    </div>
+  </div>
+  <div class="wrap aud-row">
+    <div class="aud-item">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M2 9l10-5 10 5-10 5-10-5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 11.5v4c0 1.5 2.7 3 6 3s6-1.5 6-3v-4" stroke="currentColor" stroke-width="1.6"/></svg>
+      <div><strong>Professors</strong><span>Course &amp; field materials</span></div>
+    </div>
+    <div class="aud-item">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4 5c4-2 12-2 16 0v14c-4-2-12-2-16 0V5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <div><strong>Historians</strong><span>Historical &amp; regional context</span></div>
+    </div>
+    <div class="aud-item">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M20 20l-4.4-4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <div><strong>Researchers</strong><span>Publication-ready analysis</span></div>
+    </div>
+    <div class="aud-item">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4 4l16 8-7 2-2 7-7-17z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <div><strong>Students</strong><span>Thesis &amp; PhD projects</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">SPECIALIZED MAPPING SERVICES</div>
+      <h2>Multi-layered geographic mapping</h2>
+      <p>Specialized maps created for your study area, rivers, river-drainage, geology, minerals, soils and geomorphology — as per your requirement.</p>
+    </div>
+
+    <div class="layers">
+      <div class="layer">
+        <div class="layer-num">01</div>
+        <div class="layer-name">
+          <div class="layer-swatch sw-study"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 4l8 3 8-3v16l-8 3-8-3V4z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 7v16" stroke="#fff" stroke-width="1.4"/></svg></div>
+          <h3>Study Area</h3>
+        </div>
+        <p>Clear boundary and base maps that frame your project area — the foundation every other layer is built on.</p>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">02</div>
+        <div class="layer-name">
+          <div class="layer-swatch sw-river"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12c3 0 3-4 6-4s3 4 6 4 3-4 6-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-4 6-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/></svg></div>
+          <h3>Rivers &amp; River-Drainage</h3>
+        </div>
+        <p>Hydrological networks and drainage patterns mapped for catchment, watershed and flow-based studies.</p>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">03</div>
+        <div class="layer-name">
+          <div class="layer-swatch sw-geo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3l3 5-3 3-3-3 3-5z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 20l5-8 4 5 3-4 6 7" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <h3>Geology</h3>
+        </div>
+        <p>Rock units, structure and formation boundaries mapped for geological and geomorphological interpretation.</p>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">04</div>
+        <div class="layer-name">
+          <div class="layer-swatch sw-min"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l4 4-4 4-4-4 4-4z" stroke="#C99A3B" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 12l4 4-4 4-4-4 4-4z" stroke="#C99A3B" stroke-width="1.6" stroke-linejoin="round" transform="translate(4 0)"/><path d="M16 12l4 4-4 4-4-4 4-4z" stroke="#C99A3B" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <h3>Minerals</h3>
+        </div>
+        <p>Occurrence and distribution of mineral resources plotted against the surrounding geological framework.</p>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">05</div>
+        <div class="layer-name">
+          <div class="layer-swatch sw-soil"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 8h18M3 13h18M3 18h18" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <h3>Soils</h3>
+        </div>
+        <p>Soil classification and profile mapping suited to agricultural, environmental and land-use research.</p>
+      </div>
+
+      <div class="layer">
+        <div class="layer-num">06</div>
+        <div class="layer-name">
+          <div class="layer-swatch sw-geomorph"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 19l6-10 4 6 3-4 7 8H2z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <h3>Geomorphology</h3>
+        </div>
+        <p>Landform classification and terrain analysis — slope, relief and surface processes shaping the study area.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="strip" id="about">
+  <div class="wrap">
+    <div>
+      <h2>Every project starts with your requirement, not a template.</h2>
+      <p>Layers are chosen and combined to match your exact research question — whether that's a single drainage map for a chapter, or a full multi-layer set for a thesis.</p>
+    </div>
+    <div>
+      <div class="strip-stats">
+        <div class="stat"><b>1:1</b><span>Tailored to your study area</span></div>
+        <div class="stat"><b>PhD</b><span>&amp; academic-ready output</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section contact" id="contact">
+  <div class="wrap">
+    <div class="legend-card">
+      <h3>Start a conversation</h3>
+      <a class="contact-row" href="tel:+919423685683">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 5c0 8.3 6.7 15 15 15l2-4-5-2-1.5 1.5A12 12 0 018.5 8.5L10 7 8 2 4 5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        <span><strong>+91 94236 85683</strong><span>Call for consultation</span></span>
+      </a>
+      <a class="contact-row" href="mailto:kavikondalaschandra@gmail.com">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M4 6.5l8 6 8-6" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span><strong>kavikondalaschandra@gmail.com</strong><span>Send your project brief</span></span>
+      </a>
+      <a class="contact-row" href="#services">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 4l8 3 8-3v16l-8 3-8-3V4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        <span><strong>K.S. Chandra</strong><span>GIS Mapping &amp; Spatial Analysis</span></span>
+      </a>
+    </div>
+    <div class="map-note">
+      <strong>Ready when your research is.</strong>
+      Send over your study area, the layers you need, and any reference material — a scoped map plan follows shortly after.
+    </div>
+  </div>
+</section>
+<!-- Social & Profile Links Component -->
+<div class="profile-links-container">
+  <h3 class="profile-links-title">Connect & Learn</h3>
+  <div class="links-grid">
+    
+    <!-- LinkedIn -->
+    <a href="https://www.linkedin.com/in/k-s-chandra-17913060" target="_blank" rel="noopener noreferrer" class="link-card linkedin">
+      <svg class="icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.45 1.45 0 1 0 0-2.9 1.45 1.45 0 0 0 0 2.9m1.39 9.74v-8.37H5.07v8.37h2.78Z"/>
+      </svg>
+      <div class="link-info">
+        <span class="link-label">LinkedIn</span>
+        <span class="link-sub">K. S. Chandra</span>
+      </div>
+    </a>
+
+    <!-- YouTube -->
+    <a href="https://www.youtube.com/@kavikondalaschandra6304" target="_blank" rel="noopener noreferrer" class="link-card youtube">
+      <svg class="icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+        <path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73Z"/>
+      </svg>
+      <div class="link-info">
+        <span class="link-label">YouTube</span>
+        <span class="link-sub">@kavikondalaschandra6304</span>
+      </div>
+    </a>
+
+    <!-- Superprof -->
+    <a href="https://www.superprof.co.in/ancient-indian-history-culture-archaeology-for-students-and-net-pursuing-candidates.html" target="_blank" rel="noopener noreferrer" class="link-card superprof">
+      <svg class="icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+        <path d="M12 3 1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82Z"/>
+      </svg>
+      <div class="link-info">
+        <span class="link-label">Superprof Classes</span>
+        <span class="link-sub">Ancient Indian History, Culture & Archaeology</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<style>
+  .profile-links-container {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .profile-links-title {
+    margin: 0 0 16px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .links-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .link-card {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .link-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .link-info {
+    display: flex;
+    flex-direction: column;
+    margin-left: 12px;
+  }
+
+  .link-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .link-sub {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  /* Brand Colors */
+  .linkedin { color: #0a66c2; }
+  .linkedin:hover { background-color: #f0f7fd; border-color: #0a66c2; }
+
+  .youtube { color: #ff0000; }
+  .youtube:hover { background-color: #fef2f2; border-color: #ff0000; }
+
+  .superprof { color: #ff5a5f; }
+  .superprof:hover { background-color: #fff5f5; border-color: #ff5a5f; }
+</style>
+<footer>
+  © 2026 K.S. Chandra · GIS Custom Mapping &amp; Spatial Analysis
+</footer>
+
+</body>
+</html>
